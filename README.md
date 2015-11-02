@@ -1,6 +1,8 @@
 # Test controller
 
-Testing module for the controllers. Extends req and res from dupertest and other nice properties
+Testing module for the controllers. Extends `req` and `res` from [dupertest](https://github.com/TGOlson/dupertest/), perform authentication, add data on the fly and perform more operations to test the controllers.
+
+
 
 ## Getting started
 
@@ -27,17 +29,21 @@ var test = require('test-controller');
 ```
 
 
+
 ## Usage
 
 A simple example of how to mock a request.
 
 ```js
-test(controller.add).auth(1000).post(mockTest, function(err, type, res){
-  expect(type).to.equal('json');
-  expect(!!res.error).to.equal(false);
+test(controller.show).get({}, function(err, type, file, locals){
+  expect(type).to.equal('render');
+  expect(file).to.equal('home/index');
+  expect(locals.list).to.be.an.array;
   done();
 });
 ```
+
+These are the methods for the variable `test`:
 
 | method                     | description                                                     |
 |----------------------------|-----------------------------------------------------------------|
@@ -48,12 +54,18 @@ test(controller.add).auth(1000).post(mockTest, function(err, type, res){
 | `.body(data)`              | add the data to the post request, overwriting when needed       |
 | `.end(callback)`           | send the request (rarely needed)                                |
 
+And those are the properties (most are appended, see below):
+
+| properties        | description                                  |
+|-------------------|----------------------------------------------|
+| `test`            | the function to test                         |
+| `request`         | the request object and properties            |
 
 
 
 ## Callback
 
-The callback that is passed to several methods, including `.get(data, callback)`, `.post(data, callback)` and `.end(callback)`, receives 2+ arguments in the following way:
+The callback that is passed to `.get(data, callback)`, `.post(data, callback)` and `.end(callback)`, receives 2+ arguments in the following way:
 
 1. The error argument, or false
 2. Type of response, or false
@@ -99,6 +111,7 @@ test(controller.show).get({}, function(err, type, jade, locals){
 ```
 
 
+
 ### Response type for the callback
 
 You can also test the type of response given. For this controller:
@@ -135,9 +148,9 @@ it('Show the element if an id is given', function(done){
 
 
 
-
-
 ## Methods
+
+There are many chainable methods that can be used and all of them can be chained.
 
 ### constructor(fn)
 

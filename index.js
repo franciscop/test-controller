@@ -45,6 +45,7 @@ module.exports = function(toTest){
     if (callback) {
       this.end(callback);
     }
+    return this;
   };
   
   this.params = (data) => {
@@ -52,6 +53,7 @@ module.exports = function(toTest){
     for (var key in data) {
       this.request.params[key] = data[key];
     }
+    return this;
   };
   
   this.post = (data, callback) => {
@@ -59,6 +61,7 @@ module.exports = function(toTest){
     if (callback){
       this.end(callback);
     }
+    return this;
   };
   
   this.body = (data) => {
@@ -66,6 +69,7 @@ module.exports = function(toTest){
     for (var key in data) {
       this.request.body[key] = data[key];
     }
+    return this;
   };
   
   this.end = (callback) => {
@@ -76,6 +80,7 @@ module.exports = function(toTest){
       .extendRes(this.response(callback))
       .errNext(callback)
       .end();
+    return this;
   };
   
   return this;
