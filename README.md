@@ -41,26 +41,30 @@ test(controller.add).auth(1000).post(mockTest, function(err, type, res){
 
 | method                     | description                                                     |
 |----------------------------|-----------------------------------------------------------------|
-| .get(data [, callback])    | perform a get request to the controller                         |
-| .post(data [, callback])   | perform a post request to the controller                        |
-| .auth(mockuser)            | add the property `user` to the `req` as the object passed       |
-| .params(data)              | add the data to the get request, overwriting when needed        |
-| .body(data)                | add the data to the post request, overwriting when needed       |
-| .end(callback)             | send the request (rarely needed)                                |
+| `.get(data [, callback])`  | perform a get request to the controller                         |
+| `.post(data [, callback])` | perform a post request to the controller                        |
+| `.auth(mockuser)`          | add the property `user` to the `req` as the object passed       |
+| `.params(data)`            | add the data to the get request, overwriting when needed        |
+| `.body(data)`              | add the data to the post request, overwriting when needed       |
+| `.end(callback)`           | send the request (rarely needed)                                |
 
 
 
 
 ## Callback
 
-The callback that is returned to several methos, including `.get(data, callback)`, `.post(data, callback)` and `.end(callback)`, receives 2+ arguments in the following way:
+The callback that is passed to several methods, including `.get(data, callback)`, `.post(data, callback)` and `.end(callback)`, receives 2+ arguments in the following way:
 
-1. The error argument, if any
-2. Type of response, if any
-3. First argument of the response
-4. Second argument of the response
+1. The error argument, or false
+2. Type of response, or false
+3. First argument of the response if any
+4. Second argument of the response if any
 5. Third ...
 6. ...
+
+
+
+### Error handling for the callback
 
 For example, for the following controller:
 
@@ -93,6 +97,9 @@ test(controller.show).get({}, function(err, type, jade, locals){
   locals = false;
 });
 ```
+
+
+### Response type for the callback
 
 You can also test the type of response given. For this controller:
 
@@ -141,7 +148,7 @@ This method expects one function that will be tested against the data given late
 var test = require('test-controller');
 
 // Include the controller to be tested (it has several methods)
-var controller = require('../controller/index');
+var controller = require('../controller/home');
 
 // Test the method `index` from the controller, performing a get request to it
 test(controller.index).get({}, console.log);
@@ -164,42 +171,43 @@ test(controller.show).get({ id: 24 }, function(err, type, data){
 ```
 
 
-### .post()
+### .post(data [, callback])
 
-### .auth(mockuser)
-
-> This feature is in progress and should be considerate as unstable
-
-This method is created to be overrided as/if desired. When using passport, you generate a `req.user` object. This function created the `user` object and assigns the value `{ points: points }`. The function returns a reference to `test` so you can chain it with any method you want. Usage:
+Perform a post request to the specified controller. Some examples:
 
 ```js
-it ('does not load the main page for a non-registered user', function(done){
-  test(controller.add).auth(100).get({}, function(err, type){
+// When you need to add something but you don't
+it('does not allow you to post nothing', function(done){
+  test(controller.add).post({}, function(err, type){
+    expect(err).not.to.be.false;
+  });
+});
+
+// Then you do submit it, good job!
+it('allows you to post real data as a non-authenticated user', function(done){
+  test(controller.add).post({ id: 24, value: 87 }, function(err, type, data){
+    expect(err).to.be.false;
     expect(type).to.equal('redirect');
-  });
-```
-
-
-Overriding it:
-
-```js
-var test = require('test-controller');
-var controller = require('../controller/index');
-test.auth = function(role){
-  this.user = { name: 'Peter', role: role };
-}
-
-describe('Get homepage', function(){
-  it ('does not load the main page for a non-registered user', function(done){
-    test(controller.add).get({}, function(err, type){
-      expect(type).to.equal('redirect');
-    });
-  });
-
-  it ('loads the main page for the admin', function(done){
-    test(controller.add).auth('admin').get({}, function(err, type){
-      expect(type).to.equal('render');
-    });
+    done();
   });
 });
 ```
+
+
+
+### .auth(mockuser)
+
+This method created the property `req.user` and fills it with the data passed or *truish* (empty object) if no data is passed. This is normally expected to be done by the authentication system that you have, so it's a way to perform authenticated calls to your methods. It function returns `this` so you can chain it with any method you want. Usage:
+
+```js
+var mockuser = { name: 'Tim', role: 'admin' };
+
+it ('loads the admin page for an admin', function(done){
+  test(adminController.index).auth(mockuser).get({}, function(err, type){
+    console.log("This was an authenticated call");
+    expect(type).to.equal('render');
+    done();
+  });
+```
+
+
