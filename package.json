@@ -1,10 +1,10 @@
 {
   "name": "test-controller",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": " Testing module for the controllers. Extends req and res from dupertest",
   "main": "index.js",
   "engines": {
-    "node" : ">=4.0"
+    "node": ">=4.0"
   },
   "engineStrict": true,
   "scripts": {
@@ -28,5 +28,8 @@
   "bugs": {
     "url": "https://github.com/franciscop/test-controller/issues"
   },
-  "homepage": "https://github.com/franciscop/test-controller#readme"
+  "homepage": "https://github.com/franciscop/test-controller#readme",
+  "dependencies": {
+    "dupertest": "^1.0.2"
+  }
 }
