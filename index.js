@@ -7,14 +7,8 @@ module.exports = function(toTest){
   // Function to test
   this.test = toTest;
   
-  this.auth = (points) => {
-    this.request.user = { points: points };
-    return this;
-  };
-  
-  this.request = {
-    user: false
-  };
+  // The data to send as the request
+  this.request = {};
   
   // This allows for any of the typical responses to be called. When testing,
   // the testing callback will take first an argument. If we could reach one
@@ -36,6 +30,14 @@ module.exports = function(toTest){
       sendFile: callback.bind(null, false, 'sendFile'),
       sendStatus: callback.bind(null, false, 'sendStatus')
     };
+  };
+  
+  this.auth = (data) => {
+    this.request.user = this.request.user || {};
+    for (var key in data) {
+      this.request.user[key] = data[key];
+    }
+    return this;
   };
   
   this.get = (data, callback) => {
