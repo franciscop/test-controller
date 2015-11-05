@@ -1,6 +1,6 @@
 {
   "name": "test-controller",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": " Testing module for the controllers. Extends req and res from dupertest",
   "main": "index.js",
   "engines": {
