@@ -2,7 +2,7 @@
 var request = require('dupertest');
 
 
-module.exports = function(toTest){
+function TestController(toTest){
   
   // Function to test
   this.test = toTest;
@@ -84,4 +84,8 @@ module.exports = function(toTest){
   };
   
   return this;
+}
+
+module.exports = function(toTest){
+  return new TestController(toTest);
 };
