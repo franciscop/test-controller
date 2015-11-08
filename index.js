@@ -78,7 +78,7 @@ function TestController(toTest){
       .body(this.request.body)
       .extendReq(this.request)
       .extendRes(this.response(callback))
-      .errNext(callback)
+      .errNext(function(err){ callback(err, 'next'); })
       .end();
     return this;
   };
