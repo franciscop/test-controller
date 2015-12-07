@@ -19,16 +19,16 @@ function TestController(toTest){
     
     return {
       // Call the callback with the first argument false (error) and the second equal to the type of response
-      json: callback.bind(null, false, 'json'),
-      jsonp: callback.bind(null, false, 'jsonp'),
-      download: callback.bind(null, false, 'download'),
-      end: callback.bind(null, false, 'end'),
-      location: callback.bind(null, false, 'location'),
-      redirect: callback.bind(null, false, 'redirect'),
-      render: callback.bind(null, false, 'render'),
-      send: callback.bind(null, false, 'send'),
-      sendFile: callback.bind(null, false, 'sendFile'),
-      sendStatus: callback.bind(null, false, 'sendStatus')
+      json: callback.bind(null, null, 'json'),
+      jsonp: callback.bind(null, null, 'jsonp'),
+      download: callback.bind(null, null, 'download'),
+      end: callback.bind(null, null, 'end'),
+      location: callback.bind(null, null, 'location'),
+      redirect: callback.bind(null, null, 'redirect'),
+      render: callback.bind(null, null, 'render'),
+      send: callback.bind(null, null, 'send'),
+      sendFile: callback.bind(null, null, 'sendFile'),
+      sendStatus: callback.bind(null, null, 'sendStatus')
     };
   };
   
