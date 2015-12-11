@@ -32,6 +32,13 @@ function TestController(toTest){
     };
   };
   
+  this.req = (data) => {
+    for (var key in data) {
+      this.request[key] = data[key];
+    }
+    return this;
+  }
+  
   this.auth = (data) => {
     this.request.user = this.request.user || {};
     for (var key in data) {
