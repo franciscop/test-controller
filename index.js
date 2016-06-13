@@ -1,20 +1,8 @@
 // Testing the controllers
 var request = require('dupertest');
 
-function chainable () {
-  return this;
-}
-
-function untested (method) {
-  var self = this;
-  return function () {
-    console.log('The method "' + method + '" hasn\'t been defined yet by "test-controller" so it won\'t be tested');
-    return self;
-  };
-}
 
 function TestController (toTest) {
-  if (!toTest) return this;
 
   // Function to test
   this.test = toTest;
@@ -22,42 +10,47 @@ function TestController (toTest) {
   // The data to send as the request
   this.request = {};
 
+  function chainable(){
+    return this;
+  }
+
+  function untested (method) {
+    var self = this;
+    return function () {
+      console.log('The method "' + method + '" hasn\'t been defined yet by "test-controller" so it won\'t be tested');
+      return self;
+    };
+  }
+
   // This allows for any of the typical responses to be called. When testing,
   // the testing callback will take first an argument. If we could reach one
   // of the following responses it means there was no error. This is like:
   //   callback(err = false, type, ...others);
-  this.response = function (callback) {
-    if (!callback) return {};
+  this.response = callback => ({
+    append: untested('append'),
+    attachment: untested('append'),
+    cookie: untested('cookie'),
+    clearCookie: untested('clearCookie'),
 
-    callback.bind(null, null);
-    chainable.bind(this);
-
-    return {
-      append: untested('append'),
-      attachment: untested('append'),
-      cookie: untested('cookie'),
-      clearCookie: untested('clearCookie'),
-
-      // Call the callback with the first argument false (error) and the second equal to the type of response
-      format: callback.bind('jsonp'),
-      get: untested('get'),
-      json: callback.bind('json'),
-      jsonp: callback.bind('jsonp'),
-      download: callback.bind('download'),
-      end: callback.bind('end'),
-      links: untested('links'),
-      location: callback.bind('location'),
-      redirect: callback.bind('redirect'),
-      render: callback.bind('render'),
-      send: callback.bind('send'),
-      sendFile: callback.bind('sendFile'),
-      sendStatus: callback.bind('sendStatus'),
-      set: untested('set'),
-      status: chainable,
-      type: untested('type'),
-      vary: untested('vary')
-    };
-  };
+    // Call the callback with the first argument false (error) and the second equal to the type of response
+    format: callback.bind(null, 'jsonp'),
+    get: untested('get'),
+    json: callback.bind(null, 'json'),
+    jsonp: callback.bind(null, 'jsonp'),
+    download: callback.bind(null, 'download'),
+    end: callback.bind(null, 'end'),
+    links: untested('links'),
+    location: callback.bind(null, 'location'),
+    redirect: callback.bind(null, 'redirect'),
+    render: callback.bind(null, 'render'),
+    send: callback.bind(null, 'send'),
+    sendFile: callback.bind(null, 'sendFile'),
+    sendStatus: callback.bind(null, 'sendStatus'),
+    set: untested('set'),
+    status: chainable,
+    type: untested('type'),
+    vary: untested('vary')
+  });
 
   this.req = (data) => {
     for (var key in data) {
@@ -98,6 +91,10 @@ function TestController (toTest) {
     return this;
   };
 
+  // Their footprints (definitions) are similar
+  this.delete = this.get;
+  this.put = this.post;
+
   this.body = (data) => {
     this.request.body = this.request.body || {};
     for (var key in data) {
@@ -111,9 +108,9 @@ function TestController (toTest) {
       .params(this.request.params)
       .body(this.request.body)
       .extendReq(this.request)
-      .extendRes(this.response(callback))
+      .extendRes(this.response(callback || function(){}))
       // Handle the errors
-      .errNext(function (err) { callback(err, 'next'); })
+      .errNext(function (err) { callback('error', err); })
       .end();
     return this;
   };

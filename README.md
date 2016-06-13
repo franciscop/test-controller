@@ -37,7 +37,7 @@ var test = require('test-controller');
 A simple example of how to mock a request.
 
 ```js
-test(controller.show).get({}, function(err, type, file, locals){
+test(controller.show).get({}, function(type, file, locals){
   expect(type).to.equal('render');
   expect(file).to.equal('home/index');
   expect(locals.list).to.be.an.array;
@@ -65,20 +65,39 @@ And those are the properties (most are appended, see below):
 
 
 
+
+## With [pray](github.com/franciscop/pray)
+
+[Pray](github.com/franciscop/pray) is a library made to be combined with `test-controller` to simplify testing. For the same example as above:
+
+```js
+test(controller.show).get({}, pray(
+  'render',
+  'home/index',
+  locals => expect(locals.list).to.be.an.array,
+  done
+));
+```
+
+So we will include examples both vanilla and with pray from now on.
+
+
+
 ## Callback
 
 The callback that is passed to `.get(data, callback)`, `.post(data, callback)` and `.end(callback)`, receives 2+ arguments in the following way:
 
-1. The error argument, or false
-2. Type of response, or false
-3. First argument of the response if any
-4. Second argument of the response if any
-5. Third ...
-6. ...
+1. Type of response or 'error' if `next()` was called with an error
+1. First argument of the response if any
+1. Second argument of the response if any
+1. Third ...
+1. ...
 
 
 
 ### Error handling for the callback
+
+> Since the version 3.x this has changed, so please read the new documentation
 
 For example, for the following controller:
 
@@ -93,24 +112,23 @@ module.exports.show = function(req, res, next){
 When testing it, the callback will look like this:
 
 ```js
-test(controller.show).get({ id: 1 }, function(err, type, jade, locals){
-  err = false;
+test(controller.show).get({ id: 1 }, function(type, jade, locals){
   type = 'render';
   jade = 'show';
   locals = { title: 'Hello world', id: 1 };
 });
 ```
 
+
 On the other hand (and that's why this library was born), if you don't pass the id you get the following:
 
 ```js
-test(controller.show).get({}, function(err, type, jade, locals){
-  err = '[Error] No id provided';   // Error object and it's stacktrace
-  type = false;
-  jade = false;
-  locals = false;
+test(controller.show).get({}, function(type, message){
+  type = 'error';
+  jade = '[Error] No id provided';   // Error object and it's stacktrace
 });
 ```
+
 
 
 
@@ -121,7 +139,10 @@ You can also test the type of response given. For this controller:
 ```js
 // Controller (example)
 module.exports.show = function(req, res, next){
-  if (!req.params.id || !req.params.id.match(/[0-9]+/)) res.redirect('/');
+  if (!req.params.id || !req.params.id.match(/[0-9]+/)) {
+    res.redirect('/');
+  }
+
   res.render('show', { title: 'Hello world', id: req.params.id });
 };
 ```
@@ -131,7 +152,7 @@ Test this way that depending on the get arguments :
 
 ```js
 it('If no id given, go back to home', function(done){
-  test(controller.show).get({}, function(err, type, url){
+  test(controller.show).get({}, function(type, url){
     expect(type).to.equal('redirect');
     expect(url).to.equal('/');
     done();
@@ -139,12 +160,25 @@ it('If no id given, go back to home', function(done){
 });
 
 it('Show the element if an id is given', function(done){
-  test(controller.show).get({ id: 1 }, function(err, type, file, locals){
+  test(controller.show).get({ id: 1 }, function(type, file, locals){
     expect(type).to.equal('render');
     expect(file).to.equal('index/show');
     expect(locals.id).to.equal(1);
     done();
   });
+});
+```
+
+And with pray:
+
+```js
+it('If no id given, go back to home', function(done){
+  test(controller.show).get({}, pray('redirect', '/', done));
+});
+
+it('Show the element if an id is given', function(done){
+  var locals = locals => expect(locals.id).to.equal(1);
+  test(controller.show).get({ id: 1 }, pray('render', 'index/show', locals, done));
 });
 ```
 
@@ -166,7 +200,7 @@ var test = require('test-controller');
 var controller = require('../controller/home');
 
 // Test the method `index` from the controller, performing a get request to it
-test(controller.index).get({}, console.log);
+test(controller.index).get({}, function (type, data) { });
 ```
 
 
@@ -177,12 +211,10 @@ Perform a get request to the specified controller
 
 ```js
 // Test the method `index` from the controller, performing a get request to it
-test(controller.index).get({}, console.log);
+test(controller.index).get({}, function(type, data){ });
 
 // Test the method `show` from the controller for a single id
-test(controller.show).get({ id: 24 }, function(err, type, data){
-
-});
+test(controller.show).get({ id: 24 }, function(type, data){ });
 ```
 
 
@@ -193,20 +225,27 @@ Perform a post request to the specified controller. Some examples:
 ```js
 // When you need to add something but you don't
 it('does not allow you to post nothing', function(done){
-  test(controller.add).post({}, function(err, type){
-    expect(err).not.to.be.false;
+  test(controller.add).post({}, function(type){
+    expect(type).not.to.equal('error');
   });
 });
 
 // Then you do submit it, good job!
 it('allows you to post real data as a non-authenticated user', function(done){
-  test(controller.add).post({ id: 24, value: 87 }, function(err, type, data){
-    expect(err).to.be.false;
+  test(controller.add).post({ id: 24, value: 87 }, function(type, data){
     expect(type).to.equal('redirect');
     done();
   });
 });
 ```
+
+### .put(data [, callback])
+
+Works in the same way as `.post(data [, callback])`
+
+### .delete(data [, callback])
+
+Works in the same way as `.get(data [, callback])`
 
 
 
@@ -218,7 +257,7 @@ This method created the property `req.user` and fills it with the data passed or
 var mockuser = { name: 'Tim', role: 'admin' };
 
 it ('loads the admin page for an admin', function(done){
-  test(adminController.index).auth(mockuser).get({}, function(err, type){
+  test(adminController.index).auth(mockuser).get({}, function(type){
     console.log("This was an authenticated call");
     expect(type).to.equal('render');
     done();
