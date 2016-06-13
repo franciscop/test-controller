@@ -1,5 +1,7 @@
 # Test controller
 
+[![js-semistandard-style](https://img.shields.io/badge/code%20style-semistandard-brightgreen.svg)](https://github.com/Flet/semistandard)
+
 Testing module for the controllers. Extends `req` and `res` from [dupertest](https://github.com/TGOlson/dupertest/), perform authentication, add data on the fly and perform more operations to test the controllers.
 
 
@@ -179,7 +181,7 @@ test(controller.index).get({}, console.log);
 
 // Test the method `show` from the controller for a single id
 test(controller.show).get({ id: 24 }, function(err, type, data){
-  
+
 });
 ```
 
@@ -222,5 +224,3 @@ it ('loads the admin page for an admin', function(done){
     done();
   });
 ```
-
-
